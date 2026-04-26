@@ -4,7 +4,7 @@ import logging
 from collections import OrderedDict, deque
 from collections.abc import Coroutine
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Callable
 
@@ -18,7 +18,9 @@ from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from myskoda import MySkoda, Vehicle
+from myskoda.models.charging_history import ChargingSession
 from myskoda.models.event import BaseEvent, OperationEvent, ServiceEvent
+from myskoda.models.info import CapabilityId
 from myskoda.models.user import User
 
 from .const import (
@@ -84,6 +86,7 @@ class State:
     config: Config
     operations: Operations
     service_events: ServiceEvents
+    charging_history: list[ChargingSession] = field(default_factory=list)
 
 
 class MySkodaDataUpdateCoordinator(DataUpdateCoordinator[State]):
@@ -189,6 +192,23 @@ class MySkodaDataUpdateCoordinator(DataUpdateCoordinator[State]):
 
         self._schedule_mqtt_retry()
 
+    async def _fetch_charging_history(self) -> list[ChargingSession]:
+        """Fetch all charging sessions from the API, sorted newest first.
+
+        Returns the existing cached list on failure so sensors stay available.
+        """
+        try:
+            sessions = await self.myskoda.get_all_charging_sessions(self.vin)
+            return sorted(sessions, key=lambda s: s.start_at, reverse=True)
+        except ClientResponseError as err:
+            handle_aiohttp_error("charging_history", err, self.hass, self.entry)
+        except ClientError as err:
+            _LOGGER.debug("Could not fetch charging history for %s: %s", self.vin, err)
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.debug("Unexpected error fetching charging history for %s: %s", self.vin, err)
+
+        return self.data.charging_history if self.data else []
+
     async def _async_update_data(self) -> State:
         """Called by parent class during setup and scheduled refresh."""
         config = self.data.config if self.data and self.data.config else Config()
@@ -206,6 +226,17 @@ class MySkodaDataUpdateCoordinator(DataUpdateCoordinator[State]):
                     "setup user and vehicle", err, self.hass, self.entry
                 )
                 raise UpdateFailed("Failed to retrieve initial data during setup")
+
+            # Fetch charging history during initial setup for vehicles that support charging.
+            charging_history: list[ChargingSession] = []
+            if vehicle.has_capability(CapabilityId.CHARGING):
+                try:
+                    sessions = await self.myskoda.get_all_charging_sessions(self.vin)
+                    charging_history = sorted(sessions, key=lambda s: s.start_at, reverse=True)
+                except Exception as err:  # noqa: BLE001
+                    _LOGGER.debug(
+                        "Could not fetch initial charging history for %s: %s", self.vin, err
+                    )
 
             async def _async_finish_startup(hass: HomeAssistant) -> None:
                 """Tasks to execute when we have finished starting up."""
@@ -228,7 +259,7 @@ class MySkodaDataUpdateCoordinator(DataUpdateCoordinator[State]):
             async_at_started(
                 hass=self.hass, at_start_cb=_async_finish_startup
             )  # Schedule post-setup tasks
-            return State(vehicle, user, config, self.operations, self.service_events)
+            return State(vehicle, user, config, self.operations, self.service_events, charging_history)
 
         # Regular update
         _LOGGER.debug("Performing scheduled refresh of all data for vin %s", self.vin)
@@ -251,12 +282,18 @@ class MySkodaDataUpdateCoordinator(DataUpdateCoordinator[State]):
         except ClientError as err:
             raise UpdateFailed(f"Error getting update from MySkoda API: {err}") from err
 
+        # Refresh charging history for vehicles that support charging.
+        charging_history = self.data.charging_history
+        if self.data.vehicle.has_capability(CapabilityId.CHARGING):
+            charging_history = await self._fetch_charging_history()
+
         return State(
             self.data.vehicle,
             self.data.user,
             self.data.config,
             self.operations,
             self.service_events,
+            charging_history,
         )
 
     async def _on_myskoda_update(self, vin: str) -> None:

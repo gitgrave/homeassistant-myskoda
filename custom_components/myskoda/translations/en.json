@@ -269,6 +269,25 @@
             },
             "last_trip_average_fuel_consumption": {
                 "name": "Last Trip Average Fuel Consumption"
+            },
+            "last_charge_energy": {
+                "name": "Last Charge Energy"
+            },
+            "last_charge_duration": {
+                "name": "Last Charge Duration"
+            },
+            "last_charge_start": {
+                "name": "Last Charge Start"
+            },
+            "last_charge_type": {
+                "name": "Last Charge Type",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Total Charged Energy"
             }
         },
         "switch": {

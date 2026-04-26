@@ -12,6 +12,7 @@ from homeassistant.components.sensor import (
 from homeassistant.const import (
     PERCENTAGE,
     EntityCategory,
+    UnitOfEnergy,
     UnitOfLength,
     UnitOfPower,
     UnitOfSpeed,
@@ -26,6 +27,7 @@ from homeassistant.helpers.typing import (
 
 from myskoda.models import charging
 from myskoda.models.charging import Charging, ChargingStatus
+from myskoda.models.charging_history import ChargingSession
 from myskoda.models.driving_range import EngineType
 from myskoda.models.event import OperationStatus
 from myskoda.models.info import CapabilityId
@@ -48,6 +50,11 @@ async def async_setup_entry(
             AddBlueRange,
             BatteryPercentage,
             ChargeType,
+            LastChargeEnergy,
+            LastChargeDuration,
+            LastChargeStart,
+            LastChargeType,
+            TotalChargedEnergy,
             ChargingPower,
             ChargingRate,
             ChargingState,
@@ -993,3 +1000,128 @@ class LastTripAverageFuelConsumption(TripStatisticSensor):
         if stats := self.vehicle.single_trip_statistics:
             if stats.daily_trips and stats.daily_trips[0].trips:
                 return stats.daily_trips[0].trips[0].average_fuel_consumption
+
+
+class ChargingHistorySensor(ChargingSensor):
+    """Base class for sensors derived from charging history sessions."""
+
+    @property
+    def charging_history(self) -> list[ChargingSession]:
+        return self.coordinator.data.charging_history
+
+    @property
+    def last_session(self) -> ChargingSession | None:
+        if self.charging_history:
+            return self.charging_history[0]
+        return None
+
+    @property
+    def available(self) -> bool:
+        return self.last_session is not None
+
+
+class LastChargeEnergy(ChargingHistorySensor):
+    """Energy added during the most recent charging session."""
+
+    entity_description = SensorEntityDescription(
+        key="last_charge_energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        translation_key="last_charge_energy",
+    )
+
+    @property
+    def native_value(self) -> float | None:  # noqa: D102
+        if session := self.last_session:
+            return round(session.charged_in_kwh, 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Expose all sessions as an attribute for automations."""
+        return {
+            "sessions": [
+                {
+                    "start_at": s.start_at.isoformat(),
+                    "charged_kwh": round(s.charged_in_kwh, 2),
+                    "duration_min": s.duration_in_minutes,
+                    "type": s.current_type.value.lower(),
+                }
+                for s in self.charging_history
+            ]
+        }
+
+
+class LastChargeDuration(ChargingHistorySensor):
+    """Duration of the most recent charging session."""
+
+    entity_description = SensorEntityDescription(
+        key="last_charge_duration",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        translation_key="last_charge_duration",
+    )
+
+    @property
+    def native_value(self) -> int | None:  # noqa: D102
+        if session := self.last_session:
+            return session.duration_in_minutes
+
+
+class LastChargeStart(ChargingHistorySensor):
+    """Start timestamp of the most recent charging session."""
+
+    entity_description = SensorEntityDescription(
+        key="last_charge_start",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        translation_key="last_charge_start",
+    )
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> datetime | None:  # noqa: D102
+        if session := self.last_session:
+            return session.start_at
+
+
+class LastChargeType(ChargingHistorySensor):
+    """Charge type (AC/DC) of the most recent charging session."""
+
+    entity_description = SensorEntityDescription(
+        key="last_charge_type",
+        device_class=SensorDeviceClass.ENUM,
+        translation_key="last_charge_type",
+    )
+
+    _attr_options = ["ac", "dc"]
+
+    @property
+    def native_value(self) -> str | None:  # noqa: D102
+        if session := self.last_session:
+            return session.current_type.value.lower()
+
+
+class TotalChargedEnergy(ChargingHistorySensor):
+    """Cumulative energy charged across all recorded sessions."""
+
+    entity_description = SensorEntityDescription(
+        key="total_charged_energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        translation_key="total_charged_energy",
+    )
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> float | None:  # noqa: D102
+        if not self.charging_history:
+            return None
+        return round(sum(s.charged_in_kwh for s in self.charging_history), 2)
