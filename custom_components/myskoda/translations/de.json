@@ -230,6 +230,25 @@
             },
             "outside_temperature": {
                 "name": "Außentemperatur"
+            },
+            "last_charge_energy": {
+                "name": "Energie letzter Ladevorgang"
+            },
+            "last_charge_duration": {
+                "name": "Dauer letzter Ladevorgang"
+            },
+            "last_charge_start": {
+                "name": "Start letzter Ladevorgang"
+            },
+            "last_charge_type": {
+                "name": "Typ letzter Ladevorgang",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Gesamtgeladene Energie"
             }
         },
         "switch": {

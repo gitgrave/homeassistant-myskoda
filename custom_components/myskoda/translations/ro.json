@@ -271,6 +271,25 @@
             },
             "outside_temperature": {
                 "name": "Temperatură exterioară"
+            },
+            "last_charge_energy": {
+                "name": "Energie ultimă încărcare"
+            },
+            "last_charge_duration": {
+                "name": "Durată ultimă încărcare"
+            },
+            "last_charge_start": {
+                "name": "Debut ultimă încărcare"
+            },
+            "last_charge_type": {
+                "name": "Tip ultimă încărcare",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Energie totală încărcată"
             }
         },
         "switch": {

@@ -231,6 +231,25 @@
             },
             "outside_temperature": {
                 "name": "Udendørs temperatur"
+            },
+            "last_charge_energy": {
+                "name": "Seneste opladning: energi"
+            },
+            "last_charge_duration": {
+                "name": "Seneste opladning: varighed"
+            },
+            "last_charge_start": {
+                "name": "Seneste opladning: start"
+            },
+            "last_charge_type": {
+                "name": "Seneste opladning: type",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Samlet opladet energi"
             }
         },
         "switch": {

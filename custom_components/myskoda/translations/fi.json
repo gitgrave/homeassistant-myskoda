@@ -275,6 +275,25 @@
             },
             "outside_temperature": {
                 "name": "Ulkolämpötila"
+            },
+            "last_charge_energy": {
+                "name": "Viimeinen lataus: energia"
+            },
+            "last_charge_duration": {
+                "name": "Viimeinen lataus: kesto"
+            },
+            "last_charge_start": {
+                "name": "Viimeinen lataus: alkuaika"
+            },
+            "last_charge_type": {
+                "name": "Viimeinen lataus: tyyppi",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Kokonaisladattu energia"
             }
         },
         "switch": {

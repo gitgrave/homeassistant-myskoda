@@ -230,6 +230,25 @@
             },
             "outside_temperature": {
                 "name": "Utvendig temperatur"
+            },
+            "last_charge_energy": {
+                "name": "Siste lading: energi"
+            },
+            "last_charge_duration": {
+                "name": "Siste lading: varighet"
+            },
+            "last_charge_start": {
+                "name": "Siste lading: start"
+            },
+            "last_charge_type": {
+                "name": "Siste lading: type",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Total ladet energi"
             }
         },
         "switch": {

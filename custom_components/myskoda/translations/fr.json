@@ -203,6 +203,25 @@
             },
             "outside_temperature": {
                 "name": "Température extérieure"
+            },
+            "last_charge_energy": {
+                "name": "Énergie de la dernière charge"
+            },
+            "last_charge_duration": {
+                "name": "Durée de la dernière charge"
+            },
+            "last_charge_start": {
+                "name": "Début de la dernière charge"
+            },
+            "last_charge_type": {
+                "name": "Type de la dernière charge",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Énergie totale chargée"
             }
         },
         "switch": {

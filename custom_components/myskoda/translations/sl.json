@@ -230,6 +230,25 @@
             },
             "outside_temperature": {
                 "name": "Zunanja temperatura"
+            },
+            "last_charge_energy": {
+                "name": "Zadnje polnjenje: energija"
+            },
+            "last_charge_duration": {
+                "name": "Zadnje polnjenje: trajanje"
+            },
+            "last_charge_start": {
+                "name": "Zadnje polnjenje: začetek"
+            },
+            "last_charge_type": {
+                "name": "Zadnje polnjenje: vrsta",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Skupna napolnjena energija"
             }
         },
         "switch": {

@@ -232,6 +232,25 @@
             },
             "outside_temperature": {
                 "name": "Vonkajšia teplota"
+            },
+            "last_charge_energy": {
+                "name": "Energia posledného nabíjania"
+            },
+            "last_charge_duration": {
+                "name": "Trvanie posledného nabíjania"
+            },
+            "last_charge_start": {
+                "name": "Začiatok posledného nabíjania"
+            },
+            "last_charge_type": {
+                "name": "Typ posledného nabíjania",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Celková nabitá energia"
             }
         },
         "switch": {

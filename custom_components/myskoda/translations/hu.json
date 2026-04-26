@@ -293,6 +293,25 @@
             },
             "outside_temperature": {
                 "name": "Külső hőmérséklet"
+            },
+            "last_charge_energy": {
+                "name": "Utolsó töltés energiája"
+            },
+            "last_charge_duration": {
+                "name": "Utolsó töltés időtartama"
+            },
+            "last_charge_start": {
+                "name": "Utolsó töltés kezdete"
+            },
+            "last_charge_type": {
+                "name": "Utolsó töltés típusa",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Összes töltött energia"
             }
         },
         "switch": {

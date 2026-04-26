@@ -259,6 +259,25 @@
             },
             "last_trip_average_fuel_consumption": {
                 "name": "Средний расход топлива последней поездки"
+            },
+            "last_charge_energy": {
+                "name": "Энергия последней зарядки"
+            },
+            "last_charge_duration": {
+                "name": "Длительность последней зарядки"
+            },
+            "last_charge_start": {
+                "name": "Начало последней зарядки"
+            },
+            "last_charge_type": {
+                "name": "Тип последней зарядки",
+                "state": {
+                    "ac": "AC",
+                    "dc": "DC"
+                }
+            },
+            "total_charged_energy": {
+                "name": "Общая заряженная энергия"
             }
         },
         "switch": {
