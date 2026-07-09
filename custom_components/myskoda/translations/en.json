@@ -206,6 +206,9 @@
             "service_event": {
                 "name": "Last Service Event"
             },
+            "camping_mode_ends_at": {
+                "name": "Camping Mode Ends"
+            },
             "software_version": {
                 "name": "Software Version"
             },
@@ -285,6 +288,9 @@
             },
             "ac_without_external_power": {
                 "name": "AC without External Power"
+            },
+            "camping_mode": {
+                "name": "Camping Mode"
             },
             "ac_seat_heating_front_left": {
                 "name": "Left Seat Heating with AC"

@@ -61,6 +61,7 @@ async def async_setup_entry(
             BatteryCareMode,
             AcAtUnlock,
             AcWithoutExternalPower,
+            CampingMode,
             AcSeatHeatingFrontLeft,
             AcSeatHeatingFrontRight,
             AcWindowHeating,
@@ -422,6 +423,55 @@ class AcWithoutExternalPower(MySkodaSwitch):
 
     def required_capabilities(self) -> list[CapabilityId]:
         return [CapabilityId.AIR_CONDITIONING_HEATING_SOURCE_ELECTRIC]
+
+
+class CampingMode(MySkodaSwitch):
+    """Enable/disable camping mode."""
+
+    entity_description = SwitchEntityDescription(
+        key="camping_mode",
+        name="Camping Mode",
+        device_class=SwitchDeviceClass.SWITCH,
+        translation_key="camping_mode",
+        entity_category=EntityCategory.CONFIG,
+    )
+
+    DEFAULT_TARGET_TEMPERATURE = 20.0
+
+    @property
+    def is_on(self) -> bool | None:  # noqa: D102
+        if ac := self.vehicle.air_conditioning:
+            if ac.camping_mode is not None:
+                return ac.camping_mode.enabled
+
+    def _target_temperature(self) -> float:
+        """Use the current AC target temperature, falling back to a sane default."""
+        if (ac := self.vehicle.air_conditioning) and ac.target_temperature is not None:
+            return ac.target_temperature.temperature_value
+        return self.DEFAULT_TARGET_TEMPERATURE
+
+    @Throttle(timedelta(seconds=API_COOLDOWN_IN_SECONDS))
+    async def _async_turn_on_off(self, turn_on: bool):
+        """Internal method to have a central location for the Throttle."""
+        myskoda, vin = self.coordinator.myskoda, self.vehicle.info.vin
+        action = "on" if turn_on else "off"
+        try:
+            if turn_on:
+                await self._flip_switch(myskoda.start_camping(vin, self._target_temperature()))
+            else:
+                await self._flip_switch(myskoda.stop_camping(vin))
+        except (ClientResponseError, OperationFailedError) as exc:
+            _LOGGER.error("Failed to turn camping mode %s: %s", action, exc)
+        _LOGGER.info("Camping mode successfully turned %s", action)
+
+    async def async_turn_off(self, **kwargs):  # noqa: D102
+        await self._async_turn_on_off(turn_on=False)
+
+    async def async_turn_on(self, **kwargs):  # noqa: D102
+        await self._async_turn_on_off(turn_on=True)
+
+    def required_capabilities(self) -> list[CapabilityId]:
+        return [CapabilityId.CAMPING_MODE]
 
 
 class AcSeatHeatingFrontLeft(MySkodaSwitch):
